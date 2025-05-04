@@ -39,4 +39,10 @@ export interface FormField {
   export interface ExtensionSettings {
     apiKey: string;
     isEnabled: boolean;
+    provider: string;
+    model: string;
+  }
+
+  export enum Providers {
+    OPENAI="openai"
   }

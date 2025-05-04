@@ -1,6 +1,8 @@
 // Background script runs persistently in the background
 // It manages state and handles communication between content scripts and popup
 
+import { Providers } from "./types";
+
 // Listen for installation
 chrome.runtime.onInstalled.addListener(() => {
     console.log('Mock Pilot extension installed');
@@ -8,6 +10,8 @@ chrome.runtime.onInstalled.addListener(() => {
     // Initialize default settings
     chrome.storage.sync.set({
       isEnabled: false,
+      provider: '',
+      model: '',
       apiKey: ''
     });
   });
@@ -15,25 +19,38 @@ chrome.runtime.onInstalled.addListener(() => {
   // Listen for messages from content scripts or popup
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.action === 'getSettings') {
-      chrome.storage.sync.get(['apiKey', 'isEnabled'], (result) => {
+      chrome.storage.sync.get(['apiKey', 'isEnabled', 'provider','model'], (result) => {
         sendResponse(result);
       });
-      return true; // Indicates async response
+      return true;
     }
     
     if (message.action === 'processFormFields') {
       const { formData } = message;
       
       // Get API key from storage
-      chrome.storage.sync.get(['apiKey'], async (result) => {
+      chrome.storage.sync.get(['apiKey','provider','model'], async (result) => {
         try {
           if (!result.apiKey) {
-            sendResponse({ success: false, error: 'API key not set' });
+            sendResponse({ success: false, error: 'Error:  API key not set' });
+            return;
+          }
+
+          if (!result.provider || !result.model ) {
+            sendResponse({ success: false, error: 'Error: Provider or model not set' });
             return;
           }
           
           // Process the form data with OpenAI API
-          const fieldValues = await processWithOpenAI(formData, result.apiKey);
+           let fieldValues;
+          if(result.provider === Providers.OPENAI){
+            fieldValues = await processWithOpenAI(formData, result.apiKey, result.model);
+          }else{
+            sendResponse({ 
+              success: false, 
+              error: 'Error; Unsupported Provider' 
+            });
+          }
           sendResponse({ success: true, fieldValues });
         } catch (error) {
           console.error('Error processing form fields:', error);
@@ -49,9 +66,9 @@ chrome.runtime.onInstalled.addListener(() => {
   });
   
   // Function to process form fields with OpenAI
-  async function processWithOpenAI(formData: any, apiKey: string) {
+  async function processWithOpenAI(formData: any, apiKey: string, model:string) {
     const url = 'https://api.openai.com/v1/chat/completions';
-    
+
     const prompt = `
       I need realistic data for a form with the following fields. 
       For each field, analyze the field name, type, and any context clues to generate appropriate values.
@@ -70,7 +87,7 @@ chrome.runtime.onInstalled.addListener(() => {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: model,
         messages: [
           {
             role: 'system',
@@ -81,9 +98,9 @@ chrome.runtime.onInstalled.addListener(() => {
             content: prompt
           }
         ],
-        response_format: { type: 'json_object' }
       })
     });
+
     
     if (!response.ok) {
       const error = await response.json();

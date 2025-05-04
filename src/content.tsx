@@ -1,8 +1,6 @@
 // Content script runs in the context of web pages
 // It analyzes and manipulates the DOM
 
-import React from 'react';
-import { createRoot } from 'react-dom/client';
 import './index.css';
 
 // Define interfaces for our form field analysis
@@ -25,13 +23,8 @@ let isEnabled = false;
 initialize();
 
 function initialize() {
-  // Check if extension is enabled
   chrome.storage.sync.get(['isEnabled'], (result) => {
     isEnabled = result.isEnabled === true;
-    
-    if (isEnabled) {
-      injectUI();
-    }
   });
   
   // Listen for messages from popup or background script
@@ -39,11 +32,6 @@ function initialize() {
     if (message.action === 'toggleExtension') {
       isEnabled = message.isEnabled;
       
-      if (isEnabled) {
-        injectUI();
-      } else {
-        removeUI();
-      }
       sendResponse({ success: true });
     }
     
@@ -52,7 +40,7 @@ function initialize() {
         fillCurrentForm()
           .then(result => sendResponse({ success: true, result }))
           .catch(error => sendResponse({ success: false, error: error.message }));
-        return true; // Indicates async response
+        return true; 
       } else {
         sendResponse({ success: false, error: 'Extension is disabled' });
       }
@@ -60,46 +48,6 @@ function initialize() {
     
     return true;
   });
-}
-
-// Create and inject UI elements
-function injectUI() {
-  // Remove existing UI if any
-  removeUI();
-  
-  // Create floating action button
-  const fabContainer = document.createElement('div');
-  fabContainer.id = 'formfill-ai-fab';
-  fabContainer.style.position = 'fixed';
-  fabContainer.style.bottom = '20px';
-  fabContainer.style.right = '20px';
-  fabContainer.style.zIndex = '9999';
-  
-  document.body.appendChild(fabContainer);
-  
-  // Use React to render the button
-  const root = createRoot(fabContainer);
-  root.render(
-    <React.StrictMode>
-      <button 
-        className="w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-purple-700"
-        onClick={fillCurrentForm}
-        title="Fill form with AI generated data"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </button>
-    </React.StrictMode>
-  );
-}
-
-// Remove UI elements
-function removeUI() {
-  const fab = document.getElementById('formfill-ai-fab');
-  if (fab) {
-    fab.remove();
-  }
 }
 
 // Function to fill the current form
