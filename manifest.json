@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "MockPilot",
-  "version": "0.0.1",
-  "description": "AI-powered form auto-filler for developers and testers",
+  "name": "Mock Pilot",
+  "version": "0.1.2",
+  "description": "AI-powered form auto-filler that generates realistic test data for developers and testers",
   "permissions": [
     "activeTab",
     "storage",
@@ -31,5 +31,8 @@
   "background": {
     "service_worker": "src/background.ts",
     "type": "module"
+  },
+  "author": {
+    "email": "safvanmanikulath@gmail.com"
   }
 }
