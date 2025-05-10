@@ -5,8 +5,7 @@
   "description": "AI-powered form auto-filler that generates realistic test data for developers and testers",
   "permissions": [
     "activeTab",
-    "storage",
-    "scripting"
+    "storage"
   ],
   "action": {
     "default_popup": "index.html",
