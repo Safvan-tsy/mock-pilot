@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Mock Pilot",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "AI-powered form auto-filler that generates realistic test data for developers and testers",
   "permissions": [
     "activeTab",
