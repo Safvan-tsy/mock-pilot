@@ -1,8 +1,6 @@
 // Content script runs in the context of web pages
 // It analyzes and manipulates the DOM
 
-import './index.css';
-
 // Define interfaces for our form field analysis
 interface FormField {
   id: string;
