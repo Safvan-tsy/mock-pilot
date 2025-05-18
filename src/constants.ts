@@ -7,7 +7,8 @@ export const providers = [
 
 export const models = {
    "openai":[
-        'gpt-3.5-turbo'
+        'gpt-3.5-turbo',
+        'gpt-4'
     ]
 }
 
